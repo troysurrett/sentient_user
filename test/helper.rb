@@ -19,21 +19,15 @@ end
 
 class AnonymousUser < User ; end
 
-ExceptedWords = %w{ hackery hacky monkeypatching
-                    ActiveRecord SentientUser SentientController
-                    initializer config rakefile bokmann
-                    sublicense MERCHANTABILITY NONINFRINGEMENT
-                    }
-
 def check_spelling_in_file(path_relative_to_gem_root)
   path = "#{File.dirname(__FILE__)}/../#{path_relative_to_gem_root}"
   begin
-    aspell_output = `cat #{path} | aspell list`
+    aspell = "aspell list --add-extra-dicts=#{File.dirname(__FILE__)}/word_list.rws"
+    aspell_output = `cat #{path} | #{aspell}`
   rescue => err
     warn "You probably don't have aspell. On mac: brew install aspell --lang=en"
     raise err
   end
-  noticed_words = aspell_output.split($/)
-  misspellings = noticed_words - ExceptedWords
+  misspellings = aspell_output.split($/)
   assert_equal [], misspellings
 end
